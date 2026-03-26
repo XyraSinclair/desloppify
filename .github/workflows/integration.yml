@@ -1,4 +1,4 @@
-name: Integration
+name: Scheduled Integration
 
 on:
   schedule:
@@ -13,20 +13,16 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  roslyn-integration:
-    name: roslyn-integration
+  canonical-cli-integration:
+    name: canonical-cli-integration
     runs-on: ubuntu-latest
-    env:
-      DESLOPPIFY_TEST_CSHARP_ROSLYN_CMD: "python .github/scripts/roslyn_stub.py"
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-          cache: pip
-          cache-dependency-path: pyproject.toml
-      - uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: "8.0.x"
-      - name: Run Roslyn integration/parity tests
-        run: make integration-roslyn
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Build release CLI
+        run: cargo build --release -p deslop-cli
+      - name: Run workspace integration tests
+        run: cargo test --workspace
+      - name: Verify repo-local launcher
+        run: ./scripts/desloppify-local --help

@@ -1,0 +1,89 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/deslop-types",
+    "crates/deslop-discovery",
+    "crates/deslop-graph",
+    "crates/deslop-scoring",
+    "crates/deslop-state",
+    "crates/deslop-detectors",
+    "crates/deslop-lang-python",
+    "crates/deslop-config",
+    "crates/deslop-output",
+    "crates/deslop-treesitter",
+    "crates/deslop-lang-generic",
+    "crates/deslop-lang-typescript",
+    "crates/deslop-fixer",
+    "crates/deslop-review",
+    "crates/deslop-narrative",
+    "crates/deslop-plan",
+    "crates/deslop-cli",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+
+[workspace.dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+chrono = { version = "0.4", features = ["serde"] }
+walkdir = "2"
+globset = "0.4"
+clap = { version = "4", features = ["derive"] }
+crossterm = "0.28"
+regex = "1"
+tracing = "0.1"
+fs2 = "0.4"
+
+# Internal crates
+deslop-types = { path = "crates/deslop-types" }
+deslop-discovery = { path = "crates/deslop-discovery" }
+deslop-graph = { path = "crates/deslop-graph" }
+deslop-scoring = { path = "crates/deslop-scoring" }
+deslop-state = { path = "crates/deslop-state" }
+deslop-detectors = { path = "crates/deslop-detectors" }
+deslop-lang-python = { path = "crates/deslop-lang-python" }
+deslop-config = { path = "crates/deslop-config" }
+deslop-output = { path = "crates/deslop-output" }
+deslop-treesitter = { path = "crates/deslop-treesitter" }
+deslop-lang-generic = { path = "crates/deslop-lang-generic" }
+deslop-lang-typescript = { path = "crates/deslop-lang-typescript" }
+deslop-fixer = { path = "crates/deslop-fixer" }
+deslop-review = { path = "crates/deslop-review" }
+deslop-narrative = { path = "crates/deslop-narrative" }
+deslop-plan = { path = "crates/deslop-plan" }
+
+# Async
+tokio = { version = "1", features = ["process", "time", "sync", "rt-multi-thread", "macros", "io-util"] }
+
+# Crypto / random
+sha2 = "0.10"
+hex = "0.4"
+rand = "0.8"
+
+# Tree-sitter
+tree-sitter = "0.24"
+streaming-iterator = "0.1"
+tree-sitter-language = "0.1"
+tree-sitter-python = "0.23"
+tree-sitter-javascript = "0.23"
+tree-sitter-typescript = "0.23"
+tree-sitter-go = "0.23"
+tree-sitter-rust = "0.23"
+tree-sitter-java = "0.23"
+tree-sitter-c-sharp = "0.23"
+tree-sitter-ruby = "0.23"
+tree-sitter-bash = "0.23"
+tree-sitter-cpp = "0.23"
+tree-sitter-c = "0.23"
+tree-sitter-php = "0.24"
+tree-sitter-scala = "0.23"
+
+# Text similarity
+similar = "2"
+
+# Dev dependencies
+tempfile = "3"

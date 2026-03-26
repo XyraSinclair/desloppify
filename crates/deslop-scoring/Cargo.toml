@@ -1,0 +1,10 @@
+[package]
+name = "deslop-scoring"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+deslop-types.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tracing.workspace = true

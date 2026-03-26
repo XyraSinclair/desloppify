@@ -1,0 +1,107 @@
+# LLM Runbook
+
+Use this runbook when delegating `desloppify` to another LLM.
+
+## Copy-Paste Prompt
+
+```text
+You are operating the Rust implementation of desloppify from this checkout:
+/Users/xyra/Documents/desloppify
+
+Use only this entry point:
+/Users/xyra/Documents/desloppify/scripts/desloppify-local
+
+Do not use PyPI, pip, or the archived Python fork at
+/Users/xyra/Documents/desloppify/archive/forked-desloppify-python.
+Do not assume a bare `desloppify` on the machine points to the correct version.
+
+Target codebase: /absolute/path/to/codebase
+
+Execution policy:
+1. Persist excludes for generated, vendored, build, archive, and migration directories if they exist.
+2. Start with `scan`, then `status`, then `queue`, then `plan show`, then `next`.
+3. Do not start with `review`.
+4. Do not run mutating commands until you have shown me the findings and proposed next actions.
+5. If review is requested, use:
+   `/Users/xyra/Documents/desloppify/scripts/desloppify-local review --prepare --path /absolute/path/to/codebase`
+   `/Users/xyra/Documents/desloppify/scripts/desloppify-local review --run-batches --backend codex --mode findings_only --path /absolute/path/to/codebase`
+6. Do not use `--mode trusted` unless I explicitly ask you to apply subjective assessments to scores.
+7. Use `--dry-run` first for `fix` and `move`.
+8. Summarize what you ran, what you found, and the highest-priority findings with file paths.
+
+If the repository is polyglot or auto-detect looks wrong, use explicit `--lang`
+or scan separate language roots individually.
+```
+
+## Minimal Command Sequence
+
+```bash
+DESLOP=/Users/xyra/Documents/desloppify/scripts/desloppify-local
+TARGET=/absolute/path/to/codebase
+
+$DESLOP exclude add --path "$TARGET" node_modules
+$DESLOP exclude add --path "$TARGET" dist
+$DESLOP exclude add --path "$TARGET" build
+$DESLOP exclude add --path "$TARGET" vendor
+$DESLOP exclude add --path "$TARGET" archive
+
+$DESLOP scan --path "$TARGET"
+$DESLOP status --path "$TARGET"
+$DESLOP queue --path "$TARGET"
+$DESLOP plan show --path "$TARGET"
+$DESLOP next --path "$TARGET"
+```
+
+Remove any exclude lines that do not make sense for the target repo. Add more
+if the repo contains generated or third-party trees under other names.
+
+## Review Policy
+
+Use review only after a fresh scan.
+
+Safe default:
+
+```bash
+$DESLOP review --prepare --path "$TARGET"
+$DESLOP review --run-batches --backend codex --mode findings_only --path "$TARGET"
+```
+
+Important constraints:
+
+- `review --run-batches` is for Codex only right now.
+- Other reviewers should use `review --external-start --runner ...`.
+- `--mode trusted` mutates persisted subjective score surfaces.
+- `--force-review-rerun` is only for intentional stale reruns.
+
+## Mutating Commands
+
+Before any mutating step, the LLM should show the command and run the dry-run
+form first:
+
+```bash
+$DESLOP fix --path "$TARGET" --dry-run
+$DESLOP move --path "$TARGET" --dry-run src/old_file.ts src/new_file.ts
+```
+
+The non-dry-run command should only happen after human approval.
+
+## Expected Files In The Target Repo
+
+Desloppify stores its working state under:
+
+- `.desloppify/state.json`
+- `.desloppify/config.json`
+- `.desloppify/` review artifacts
+
+Those files should usually be kept between scans so the tool can track history.
+
+## Red Flags
+
+Stop and reassess if any of these happen:
+
+- The LLM tries to install or run the archived Python fork.
+- The LLM starts with `review` before a scan exists.
+- The LLM uses bare `desloppify` without proving it came from this checkout.
+- The LLM scans vendored, generated, or archived trees as if they were live code.
+- The LLM uses `--mode trusted` without explicit approval.
+- The LLM runs `fix` or `move` without `--dry-run`.

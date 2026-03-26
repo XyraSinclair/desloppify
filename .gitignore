@@ -28,6 +28,7 @@ todos/
 
 dogfood-observations.md
 pytest-full.xml
+target/
 
 # Dev tool configs
 .importlinter

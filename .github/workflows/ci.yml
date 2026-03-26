@@ -13,111 +13,46 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  lint:
-    name: lint
+  fmt:
+    name: cargo-fmt
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: dtolnay/rust-toolchain@stable
         with:
-          python-version: "3.11"
-          cache: pip
-          cache-dependency-path: pyproject.toml
-      - name: Run lint gate
-        run: make lint
+          components: rustfmt
+      - uses: Swatinem/rust-cache@v2
+      - name: Check formatting
+        run: cargo fmt --all -- --check
 
-  typecheck:
-    name: typecheck
+  clippy:
+    name: cargo-clippy
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: dtolnay/rust-toolchain@stable
         with:
-          python-version: "3.11"
-          cache: pip
-          cache-dependency-path: pyproject.toml
-      - name: Run typecheck gate
-        run: make typecheck
+          components: clippy
+      - uses: Swatinem/rust-cache@v2
+      - name: Run clippy
+        run: cargo clippy --workspace --all-targets -- -D warnings
 
-  arch-contracts:
-    name: arch-contracts
+  test:
+    name: cargo-test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-          cache: pip
-          cache-dependency-path: pyproject.toml
-      - name: Run architecture contracts gate
-        run: make arch
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Run workspace tests
+        run: cargo test --workspace
 
-  ci-contracts:
-    name: ci-contracts
+  cli-smoke:
+    name: cli-smoke
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-          cache: pip
-          cache-dependency-path: pyproject.toml
-      - name: Run CI contracts gate
-        run: make ci-contracts
-
-  tests-core:
-    name: tests-core
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-          cache: pip
-          cache-dependency-path: pyproject.toml
-      - name: Run core tests
-        run: make tests PYTEST_XML=pytest-core.xml
-      - name: Upload core test report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: pytest-core-report
-          path: pytest-core.xml
-
-  tests-full:
-    name: tests-full
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-          cache: pip
-          cache-dependency-path: pyproject.toml
-      - name: Run full tests (with optional deps)
-        run: make tests-full PYTEST_XML=pytest-full.xml
-      - name: Upload full test report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: pytest-full-report
-          path: pytest-full.xml
-
-  package-smoke:
-    name: package-smoke
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-          cache: pip
-          cache-dependency-path: pyproject.toml
-      - name: Run packaging smoke gate
-        run: make package-smoke
-      - name: Upload distribution artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: dist-packages
-          path: dist/
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Verify repo-local launcher
+        run: ./scripts/desloppify-local --help
